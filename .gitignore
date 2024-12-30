@@ -1,0 +1,5 @@
+# ignore all directories
+**/
+
+# ignore pdf
+*.pdf
