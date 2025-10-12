@@ -1,6 +1,15 @@
 {
+	"name": "code-to-pdf",
+	"version": "1.0.0",
+	"description": "Convert code to PDF with syntax highlighting",
+	"main": "generate-pdf.cjs",
+	"scripts": {
+		"start": "node generate-pdf.cjs"
+	},
 	"dependencies": {
 		"highlight.js": "^11.11.1",
+		"ignore": "^7.0.5",
+		"isbinaryfile": "^5.0.6",
 		"markdown-pdf": "^11.0.0",
 		"puppeteer": "^23.11.1"
 	}
