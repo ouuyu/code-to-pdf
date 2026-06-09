@@ -1,12 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const puppeteer = require('puppeteer');
-const hljs = require('highlight.js');
-const { execSync } = require('child_process');
-const ignore = require('ignore');
-const { isBinaryFileSync } = require('isbinaryfile');
-const { parseArgs } = require('node:util');
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+const puppeteer = require("puppeteer");
+const hljs = require("highlight.js");
+const { execSync } = require("child_process");
+const ignore = require("ignore");
+const { isBinaryFileSync } = require("isbinaryfile");
+const { parseArgs } = require("node:util");
 
 const DEFAULT_MAX_FILE_SIZE = 100 * 1024; // 100KB
 
@@ -14,23 +14,24 @@ const fileIdMap = new Map();
 const ignoreCache = new Map();
 
 // Emoji regex pattern - matches most Unicode emojis
-const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2614}-\u{2615}\u{2648}-\u{2653}\u{267F}\u{2693}\u{26A1}\u{26AA}-\u{26AB}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26CE}\u{26D4}\u{26EA}\u{26F2}-\u{26F3}\u{26F5}\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu;
+const EMOJI_REGEX =
+  /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2614}-\u{2615}\u{2648}-\u{2653}\u{267F}\u{2693}\u{26A1}\u{26AA}-\u{26AB}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26CE}\u{26D4}\u{26EA}\u{26F2}-\u{26F3}\u{26F5}\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu;
 
 // Remove emojis from text
 function removeEmojis(text) {
-  return text.replace(EMOJI_REGEX, '');
+  return text.replace(EMOJI_REGEX, "");
 }
 
 // Escape special LaTeX characters
 function escapeLatex(text) {
   return text
-    .replace(/\\/g, '\\textbackslash{}')
-    .replace(/([#$%&_{}])/g, '\\$1')
-    .replace(/\^/g, '\\textasciicircum{}')
-    .replace(/~/g, '\\textasciitilde{}')
-    .replace(/</g, '\\textless{}')
-    .replace(/>/g, '\\textgreater{}')
-    .replace(/\|/g, '\\textbar{}');
+    .replace(/\\/g, "\\textbackslash{}")
+    .replace(/([#$%&_{}])/g, "\\$1")
+    .replace(/\^/g, "\\textasciicircum{}")
+    .replace(/~/g, "\\textasciitilde{}")
+    .replace(/</g, "\\textless{}")
+    .replace(/>/g, "\\textgreater{}")
+    .replace(/\|/g, "\\textbar{}");
 }
 
 // Convert basic markdown to LaTeX (for .md files to be rendered as-is)
@@ -41,44 +42,47 @@ function markdownToLatex(markdown) {
   latex = removeEmojis(latex);
 
   // Headers
-  latex = latex.replace(/^######\s+(.+)$/gm, '\\subparagraph{$1}');
-  latex = latex.replace(/^#####\s+(.+)$/gm, '\\paragraph{$1}');
-  latex = latex.replace(/^####\s+(.+)$/gm, '\\subsubsection{$1}');
-  latex = latex.replace(/^###\s+(.+)$/gm, '\\subsection{$1}');
-  latex = latex.replace(/^##\s+(.+)$/gm, '\\section{$1}');
-  latex = latex.replace(/^#\s+(.+)$/gm, '\\chapter{$1}');
+  latex = latex.replace(/^######\s+(.+)$/gm, "\\subparagraph{$1}");
+  latex = latex.replace(/^#####\s+(.+)$/gm, "\\paragraph{$1}");
+  latex = latex.replace(/^####\s+(.+)$/gm, "\\subsubsection{$1}");
+  latex = latex.replace(/^###\s+(.+)$/gm, "\\subsection{$1}");
+  latex = latex.replace(/^##\s+(.+)$/gm, "\\section{$1}");
+  latex = latex.replace(/^#\s+(.+)$/gm, "\\chapter{$1}");
 
   // Bold and italic
-  latex = latex.replace(/\*\*\*(.+?)\*\*\*/g, '\\textbf{\\textit{$1}}');
-  latex = latex.replace(/\*\*(.+?)\*\*/g, '\\textbf{$1}');
-  latex = latex.replace(/\*(.+?)\*/g, '\\textit{$1}');
-  latex = latex.replace(/___(.+?)___/g, '\\textbf{\\textit{$1}}');
-  latex = latex.replace(/__(.+?)__/g, '\\textbf{$1}');
-  latex = latex.replace(/_(.+?)_/g, '\\textit{$1}');
+  latex = latex.replace(/\*\*\*(.+?)\*\*\*/g, "\\textbf{\\textit{$1}}");
+  latex = latex.replace(/\*\*(.+?)\*\*/g, "\\textbf{$1}");
+  latex = latex.replace(/\*(.+?)\*/g, "\\textit{$1}");
+  latex = latex.replace(/___(.+?)___/g, "\\textbf{\\textit{$1}}");
+  latex = latex.replace(/__(.+?)__/g, "\\textbf{$1}");
+  latex = latex.replace(/_(.+?)_/g, "\\textit{$1}");
 
   // Inline code
-  latex = latex.replace(/`([^`]+)`/g, '\\texttt{$1}');
+  latex = latex.replace(/`([^`]+)`/g, "\\texttt{$1}");
 
   // Code blocks - keep as verbatim
-  latex = latex.replace(/```[\w]*\n([\s\S]*?)```/g, '\\begin{verbatim}\n$1\\end{verbatim}');
+  latex = latex.replace(/```[\w]*\n([\s\S]*?)```/g, "\\begin{verbatim}\n$1\\end{verbatim}");
 
   // Links: [text](url) -> \href{url}{text}
-  latex = latex.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '\\href{$2}{$1}');
+  latex = latex.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "\\href{$2}{$1}");
 
   // Images: ![alt](url) -> \includegraphics{url} with comment for alt
-  latex = latex.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '% Image: $1\n\\includegraphics[width=\\textwidth]{$2}');
+  latex = latex.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    "% Image: $1\n\\includegraphics[width=\\textwidth]{$2}",
+  );
 
   // Unordered lists
-  latex = latex.replace(/^[\*\-]\s+(.+)$/gm, '\\item $1');
+  latex = latex.replace(/^[\*\-]\s+(.+)$/gm, "\\item $1");
 
   // Ordered lists (basic)
-  latex = latex.replace(/^\d+\.\s+(.+)$/gm, '\\item $1');
+  latex = latex.replace(/^\d+\.\s+(.+)$/gm, "\\item $1");
 
   // Blockquotes
-  latex = latex.replace(/^>\s+(.+)$/gm, '\\begin{quote}$1\\end{quote}');
+  latex = latex.replace(/^>\s+(.+)$/gm, "\\begin{quote}$1\\end{quote}");
 
   // Horizontal rules
-  latex = latex.replace(/^[-*_]{3,}$/gm, '\\hrulefill');
+  latex = latex.replace(/^[-*_]{3,}$/gm, "\\hrulefill");
 
   return latex;
 }
@@ -86,85 +90,85 @@ function markdownToLatex(markdown) {
 // Map language to listings language name
 function getListingsLanguage(extension) {
   const languageMap = {
-    'js': 'JavaScript',
-    'jsx': 'JavaScript',
-    'ts': 'JavaScript',
-    'tsx': 'JavaScript',
-    'py': 'Python',
-    'java': 'Java',
-    'cpp': 'C++',
-    'c': 'C',
-    'go': 'Go',
-    'rs': 'Rust',
-    'php': 'PHP',
-    'rb': 'Ruby',
-    'cs': 'C',
-    'css': 'CSS',
-    'scss': 'CSS',
-    'less': 'CSS',
-    'html': 'HTML',
-    'xml': 'XML',
-    'json': 'JSON',
-    'yaml': 'YAML',
-    'yml': 'YAML',
-    'sh': 'bash',
-    'bash': 'bash',
-    'sql': 'SQL'
+    js: "JavaScript",
+    jsx: "JavaScript",
+    ts: "JavaScript",
+    tsx: "JavaScript",
+    py: "Python",
+    java: "Java",
+    cpp: "C++",
+    c: "C",
+    go: "Go",
+    rs: "Rust",
+    php: "PHP",
+    rb: "Ruby",
+    cs: "C",
+    css: "CSS",
+    scss: "CSS",
+    less: "CSS",
+    html: "HTML",
+    xml: "XML",
+    json: "JSON",
+    yaml: "YAML",
+    yml: "YAML",
+    sh: "bash",
+    bash: "bash",
+    sql: "SQL",
   };
 
-  return languageMap[extension.toLowerCase()] || '';
+  return languageMap[extension.toLowerCase()] || "";
 }
 
-const customStyle = fs.readFileSync(path.join(__dirname, 'styles.css'), 'utf-8');
+const customStyle = fs.readFileSync(path.join(__dirname, "styles.css"), "utf-8");
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Parse command line arguments
 function parseCLIArgs() {
   const options = {
     input: {
-      type: 'string',
-      short: 'i',
-      default: './src'
+      type: "string",
+      short: "i",
+      default: "./src",
     },
     output: {
-      type: 'string',
-      short: 'o'
+      type: "string",
+      short: "o",
     },
-    'max-size': {
-      type: 'string',
-      short: 's',
-      default: '100'
+    "max-size": {
+      type: "string",
+      short: "s",
+      default: "100",
     },
-    'files-per-pdf': {
-      type: 'string',
-      short: 'f',
-      default: '50'
+    "files-per-pdf": {
+      type: "string",
+      short: "f",
+      default: "50",
     },
     format: {
-      type: 'string',
-      short: 'F',
-      default: 'pdf'
+      type: "string",
+      short: "F",
+      default: "pdf",
     },
     help: {
-      type: 'boolean',
-      short: 'h',
-      default: false
+      type: "boolean",
+      short: "h",
+      default: false,
     },
     version: {
-      type: 'boolean',
-      short: 'v',
-      default: false
-    }
+      type: "boolean",
+      short: "v",
+      default: false,
+    },
   };
 
   try {
     const { values, positionals } = parseArgs({
       options,
       allowPositionals: true,
-      strict: true
+      strict: true,
     });
 
     // If positional argument provided, use it as input
@@ -174,7 +178,7 @@ function parseCLIArgs() {
 
     return values;
   } catch (error) {
-    console.error('Error parsing arguments:', error.message);
+    console.error("Error parsing arguments:", error.message);
     showHelp();
     process.exit(1);
   }
@@ -219,42 +223,42 @@ Features:
 }
 
 function showVersion() {
-  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
-  console.log(`code-to-pdf v${packageJson.version || '1.0.0'}`);
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf-8"));
+  console.log(`code-to-pdf v${packageJson.version || "1.0.0"}`);
 }
 
 function parseInput(input) {
   if (fs.existsSync(input)) {
     return {
-      type: 'local',
-      path: input
+      type: "local",
+      path: input,
     };
   }
   const githubPatterns = [
-    /^https:\/\/github\.com\/([^/]+\/[^/]+)$/,          // https://github.com/owner/repo
-    /^git@github\.com:([^/]+\/[^/]+)\.git$/,            // git@github.com:owner/repo.git
-    /^([^/]+\/[^/]+)$/                                  // owner/repo
+    /^https:\/\/github\.com\/([^/]+\/[^/]+)$/, // https://github.com/owner/repo
+    /^git@github\.com:([^/]+\/[^/]+)\.git$/, // git@github.com:owner/repo.git
+    /^([^/]+\/[^/]+)$/, // owner/repo
   ];
 
   for (const pattern of githubPatterns) {
     const match = input.match(pattern);
     if (match) {
       return {
-        type: 'github',
-        repo: match[1].replace('.git', '')
+        type: "github",
+        repo: match[1].replace(".git", ""),
       };
     }
   }
 
   return {
-    type: 'local',
-    path: input
+    type: "local",
+    path: input,
   };
 }
 
 function generateFileId(filePath) {
   if (!fileIdMap.has(filePath)) {
-    const hash = crypto.createHash('md5').update(filePath).digest('hex').slice(0, 8);
+    const hash = crypto.createHash("md5").update(filePath).digest("hex").slice(0, 8);
     fileIdMap.set(filePath, `file-${hash}`);
   }
   return fileIdMap.get(filePath);
@@ -267,10 +271,10 @@ function getIgnoreForDir(dirPath) {
   }
 
   const ig = ignore();
-  const gitignorePath = path.join(dirPath, '.gitignore');
+  const gitignorePath = path.join(dirPath, ".gitignore");
 
   if (fs.existsSync(gitignorePath)) {
-    const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
+    const gitignoreContent = fs.readFileSync(gitignorePath, "utf-8");
     ig.add(gitignoreContent);
   }
 
@@ -283,7 +287,24 @@ function getIgnoreForDir(dirPath) {
 function shouldIgnore(filePath, baseDir) {
   // Always apply default ignores
   const defaultIg = ignore();
-  defaultIg.add(['.git', 'node_modules', 'dist', '.vscode', 'Cargo.lock', 'yarn.lock', 'package-lock.json', 'pnpm-lock.yaml', '.gitignore']);
+  defaultIg.add([
+    ".git",
+    "tests",
+    "test",
+    ".DS_Store",
+    ".idea",
+    "*.snap.*",
+    "uv.lock",
+    "*.snap",
+    "node_modules",
+    "dist",
+    ".vscode",
+    "Cargo.lock",
+    "yarn.lock",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    ".gitignore",
+  ]);
   const relativeFromBase = path.relative(baseDir, filePath);
   if (defaultIg.ignores(relativeFromBase)) {
     return true;
@@ -321,7 +342,7 @@ function isBinaryFile(filePath) {
 }
 
 async function cloneRepo(repo) {
-  const tempDir = path.join(process.cwd(), repo.replace('/', '-'));
+  const tempDir = path.join(process.cwd(), repo.replace("/", "-"));
   console.log(`Cloning repository: ${repo}...`);
 
   try {
@@ -338,18 +359,18 @@ async function cloneRepo(repo) {
     }
 
     execSync(`git clone https://github.com/${repo}.git ${tempDir}`, {
-      stdio: 'inherit'
+      stdio: "inherit",
     });
 
     return tempDir;
   } catch (error) {
-    console.error('Failed to clone repository:', error.message);
+    console.error("Failed to clone repository:", error.message);
     process.exit(1);
   }
 }
 
-function generateDirectoryTree(dir, baseDir, maxFileSize, prefix = '') {
-  let tree = '';
+function generateDirectoryTree(dir, baseDir, maxFileSize, prefix = "") {
+  let tree = "";
   const files = fs.readdirSync(dir);
 
   files.forEach((file, index) => {
@@ -361,11 +382,16 @@ function generateDirectoryTree(dir, baseDir, maxFileSize, prefix = '') {
     }
 
     const isLast = index === files.length - 1;
-    const connector = isLast ? '+-- ' : '|-- ';
+    const connector = isLast ? "+-- " : "|-- ";
 
     if (fs.statSync(fullPath).isDirectory()) {
       tree += `${prefix}${connector}${file}/\n`;
-      tree += generateDirectoryTree(fullPath, baseDir, maxFileSize, prefix + (isLast ? '    ' : '|   '));
+      tree += generateDirectoryTree(
+        fullPath,
+        baseDir,
+        maxFileSize,
+        prefix + (isLast ? "    " : "|   "),
+      );
     } else {
       // Skip binary files
       if (isBinaryFile(fullPath)) {
@@ -386,8 +412,8 @@ function generateDirectoryTree(dir, baseDir, maxFileSize, prefix = '') {
   return tree;
 }
 
-function generateDirectoryTreeLatex(dir, baseDir, maxFileSize, prefix = '') {
-  let tree = '';
+function generateDirectoryTreeLatex(dir, baseDir, maxFileSize, prefix = "") {
+  let tree = "";
   const files = fs.readdirSync(dir);
 
   files.forEach((file, index) => {
@@ -398,11 +424,16 @@ function generateDirectoryTreeLatex(dir, baseDir, maxFileSize, prefix = '') {
     }
 
     const isLast = index === files.length - 1;
-    const connector = isLast ? '+-- ' : '|-- ';
+    const connector = isLast ? "+-- " : "|-- ";
 
     if (fs.statSync(fullPath).isDirectory()) {
       tree += `${prefix}${connector}${escapeLatex(file)}/\n`;
-      tree += generateDirectoryTreeLatex(fullPath, baseDir, maxFileSize, prefix + (isLast ? '    ' : '|   '));
+      tree += generateDirectoryTreeLatex(
+        fullPath,
+        baseDir,
+        maxFileSize,
+        prefix + (isLast ? "    " : "|   "),
+      );
     } else {
       if (isBinaryFile(fullPath)) {
         tree += `${prefix}${connector}${escapeLatex(file)} (binary, skipped)\n`;
@@ -424,7 +455,7 @@ function generateDirectoryTreeLatex(dir, baseDir, maxFileSize, prefix = '') {
 function getAllFiles(dir, baseDir, maxFileSize) {
   const files = [];
 
-  fs.readdirSync(dir).forEach(file => {
+  fs.readdirSync(dir).forEach((file) => {
     const fullPath = path.join(dir, file);
 
     // Skip if ignored by gitignore
@@ -453,62 +484,62 @@ function getAllFiles(dir, baseDir, maxFileSize) {
 // Get language for syntax highlighting
 function getLanguage(extension) {
   const languageMap = {
-    'js': 'javascript',
-    'jsx': 'javascript',
-    'ts': 'typescript',
-    'tsx': 'typescript',
-    'py': 'python',
-    'java': 'java',
-    'cpp': 'cpp',
-    'c': 'c',
-    'go': 'go',
-    'rs': 'rust',
-    'php': 'php',
-    'rb': 'ruby',
-    'cs': 'csharp',
-    'css': 'css',
-    'scss': 'scss',
-    'less': 'less',
-    'html': 'html',
-    'xml': 'xml',
-    'md': 'markdown',
-    'json': 'json',
-    'yaml': 'yaml',
-    'yml': 'yaml',
-    'sh': 'bash',
-    'bash': 'bash',
-    'sql': 'sql'
+    js: "javascript",
+    jsx: "javascript",
+    ts: "typescript",
+    tsx: "typescript",
+    py: "python",
+    java: "java",
+    cpp: "cpp",
+    c: "c",
+    go: "go",
+    rs: "rust",
+    php: "php",
+    rb: "ruby",
+    cs: "csharp",
+    css: "css",
+    scss: "scss",
+    less: "less",
+    html: "html",
+    xml: "xml",
+    md: "markdown",
+    json: "json",
+    yaml: "yaml",
+    yml: "yaml",
+    sh: "bash",
+    bash: "bash",
+    sql: "sql",
   };
 
-  return languageMap[extension.toLowerCase()] || '';
+  return languageMap[extension.toLowerCase()] || "";
 }
 
 function generateHTML(workDir, title, maxFileSize, filesSubset = null, partInfo = null) {
   let content = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
   content += `<style>${customStyle}</style>`;
-  content += '</head><body>';
-  content += `<h1>${title}${partInfo ? ` - Part ${partInfo.current}/${partInfo.total}` : ''}</h1>`;
+  content += "</head><body>";
+  content += `<h1>${title}${partInfo ? ` - Part ${partInfo.current}/${partInfo.total}` : ""}</h1>`;
 
   content += '<h2>Directory Structure</h2><div class="directory-tree">';
   content += generateDirectoryTree(workDir, workDir, maxFileSize);
-  content += '</div>';
+  content += "</div>";
 
-  content += '<h2>File Contents</h2>';
+  content += "<h2>File Contents</h2>";
   const files = filesSubset || getAllFiles(workDir, workDir, maxFileSize);
 
   if (partInfo) {
     content += `<p>Showing files ${partInfo.startFile} to ${partInfo.endFile} of ${partInfo.totalFiles} total files</p>`;
   }
 
-  files.forEach(file => {
-    const code = fs.readFileSync(file, 'utf-8');
+  files.forEach((file) => {
+    const code = fs.readFileSync(file, "utf-8");
     const fileId = generateFileId(file);
     const extension = path.extname(file).slice(1);
 
     const language = getLanguage(extension);
-    const highlightedCode = language ?
-      hljs.highlight(code, { language }).value :
-      hljs.highlightAuto(code).value;
+    const highlightedCode = language
+      ? hljs.highlight(code, { language }).value
+      : hljs.highlightAuto(code).value;
 
     content += `<div class="file-container">`;
     content += `<h3 id="${fileId}">${file}</h3>`;
@@ -516,7 +547,7 @@ function generateHTML(workDir, title, maxFileSize, filesSubset = null, partInfo 
     content += `</div>`;
   });
 
-  content += '</body></html>';
+  content += "</body></html>";
   return content;
 }
 
@@ -578,17 +609,17 @@ function generateLaTeX(workDir, title, maxFileSize) {
 `;
 
   // Directory structure section
-  content += '\\section{Directory Structure}\n';
-  content += '\\begin{verbatim}\n';
+  content += "\\section{Directory Structure}\n";
+  content += "\\begin{verbatim}\n";
   content += generateDirectoryTreeLatex(workDir, workDir, maxFileSize);
-  content += '\\end{verbatim}\n\n';
+  content += "\\end{verbatim}\n\n";
 
   // File contents section
-  content += '\\section{File Contents}\n\n';
+  content += "\\section{File Contents}\n\n";
   const files = getAllFiles(workDir, workDir, maxFileSize);
 
-  files.forEach(file => {
-    let code = fs.readFileSync(file, 'utf-8');
+  files.forEach((file) => {
+    let code = fs.readFileSync(file, "utf-8");
     const extension = path.extname(file).slice(1).toLowerCase();
     const relativePath = path.relative(workDir, file);
 
@@ -598,12 +629,12 @@ function generateLaTeX(workDir, title, maxFileSize) {
     content += `\\subsection{${escapeLatex(relativePath)}}\n`;
 
     // Check if it's a markdown file - render as-is (converted to LaTeX)
-    if (extension === 'md' || extension === 'markdown') {
+    if (extension === "md" || extension === "markdown") {
       content += markdownToLatex(code);
-      content += '\n\n';
+      content += "\n\n";
     }
     // Check if it's an image file reference - include as-is (SVG not supported in LaTeX)
-    else if (['png', 'jpg', 'jpeg', 'gif', 'pdf'].includes(extension)) {
+    else if (["png", "jpg", "jpeg", "gif", "pdf"].includes(extension)) {
       content += `\\begin{figure}[h]\n`;
       content += `\\centering\n`;
       content += `\\includegraphics[width=0.8\\textwidth]{${file}}\n`;
@@ -619,14 +650,14 @@ function generateLaTeX(workDir, title, maxFileSize) {
         content += `\\begin{lstlisting}\n`;
       }
       content += code;
-      if (!code.endsWith('\n')) {
-        content += '\n';
+      if (!code.endsWith("\n")) {
+        content += "\n";
       }
       content += `\\end{lstlisting}\n\n`;
     }
   });
 
-  content += '\\end{document}\n';
+  content += "\\end{document}\n";
   return content;
 }
 
@@ -635,7 +666,7 @@ async function generateLaTeXFile(inputPath, outputPath, maxFileSize) {
   let workDir;
   let title;
 
-  if (inputInfo.type === 'github') {
+  if (inputInfo.type === "github") {
     workDir = await cloneRepo(inputInfo.repo);
     title = `GitHub: ${inputInfo.repo}`;
   } else {
@@ -643,25 +674,30 @@ async function generateLaTeXFile(inputPath, outputPath, maxFileSize) {
     title = `Local Directory: ${path.basename(workDir)}`;
   }
 
-  console.log(`Processing ${inputInfo.type === 'github' ? 'repository' : 'directory'}: ${workDir}`);
+  console.log(`Processing ${inputInfo.type === "github" ? "repository" : "directory"}: ${workDir}`);
 
   const latex = generateLaTeX(workDir, title, maxFileSize);
 
-  const texName = outputPath || (inputInfo.type === 'github' ?
-    `${inputInfo.repo.replace('/', '-')}.tex` :
-    `${path.basename(workDir)}.tex`);
+  const texName =
+    outputPath ||
+    (inputInfo.type === "github"
+      ? `${inputInfo.repo.replace("/", "-")}.tex`
+      : `${path.basename(workDir)}.tex`);
 
   fs.writeFileSync(texName, latex);
 
   // Cleanup for GitHub repos
-  if (inputInfo.type === 'github') {
+  if (inputInfo.type === "github") {
     for (let i = 0; i < 3; i++) {
       try {
         fs.rmSync(workDir, { recursive: true, force: true });
         break;
       } catch (err) {
         if (i === 2) {
-          console.warn('Warning: Could not delete temp directory, please delete manually:', workDir);
+          console.warn(
+            "Warning: Could not delete temp directory, please delete manually:",
+            workDir,
+          );
           break;
         }
         await sleep(1000);
@@ -677,7 +713,7 @@ async function generatePDF(inputPath, outputPath, maxFileSize, filesPerPdf) {
   let workDir;
   let title;
 
-  if (inputInfo.type === 'github') {
+  if (inputInfo.type === "github") {
     workDir = await cloneRepo(inputInfo.repo);
     title = `GitHub: ${inputInfo.repo}`;
   } else {
@@ -685,7 +721,7 @@ async function generatePDF(inputPath, outputPath, maxFileSize, filesPerPdf) {
     title = `Local Directory: ${path.basename(workDir)}`;
   }
 
-  console.log(`Processing ${inputInfo.type === 'github' ? 'repository' : 'directory'}: ${workDir}`);
+  console.log(`Processing ${inputInfo.type === "github" ? "repository" : "directory"}: ${workDir}`);
 
   // Get all files first
   const allFiles = getAllFiles(workDir, workDir, maxFileSize);
@@ -702,9 +738,11 @@ async function generatePDF(inputPath, outputPath, maxFileSize, filesPerPdf) {
   }
 
   // Generate base PDF name
-  const basePdfName = outputPath || (inputInfo.type === 'github' ?
-    `${inputInfo.repo.replace('/', '-')}` :
-    `${path.basename(workDir)}`);
+  const basePdfName =
+    outputPath ||
+    (inputInfo.type === "github"
+      ? `${inputInfo.repo.replace("/", "-")}`
+      : `${path.basename(workDir)}`);
 
   // Launch browser once for all PDFs
   const browser = await puppeteer.launch();
@@ -715,65 +753,70 @@ async function generatePDF(inputPath, outputPath, maxFileSize, filesPerPdf) {
       const endIdx = Math.min((i + 1) * filesPerPdf, totalFiles);
       const filesChunk = allFiles.slice(startIdx, endIdx);
 
-      const partInfo = shouldPaginate ? {
-        current: i + 1,
-        total: numPdfs,
-        startFile: startIdx + 1,
-        endFile: endIdx,
-        totalFiles: totalFiles
-      } : null;
+      const partInfo = shouldPaginate
+        ? {
+            current: i + 1,
+            total: numPdfs,
+            startFile: startIdx + 1,
+            endFile: endIdx,
+            totalFiles: totalFiles,
+          }
+        : null;
 
-      console.log(`Generating${shouldPaginate ? ` Part ${i + 1}/${numPdfs}` : ''} (${filesChunk.length} files)...`);
+      console.log(
+        `Generating${shouldPaginate ? ` Part ${i + 1}/${numPdfs}` : ""} (${filesChunk.length} files)...`,
+      );
 
       const html = generateHTML(workDir, title, maxFileSize, filesChunk, partInfo);
-      fs.writeFileSync('./code.html', html);
+      fs.writeFileSync("./code.html", html);
 
       const page = await browser.newPage();
 
       await page.setDefaultNavigationTimeout(1200000);
       await page.setDefaultTimeout(1200000);
 
-      await page.goto(`file://${path.resolve('./code.html')}`, {
-        waitUntil: 'networkidle0',
-        timeout: 120000
+      await page.goto(`file://${path.resolve("./code.html")}`, {
+        waitUntil: "networkidle0",
+        timeout: 120000,
       });
 
       // Generate PDF name with part number if paginated
-      const pdfName = shouldPaginate ?
-        `${basePdfName}-part${i + 1}.pdf` :
-        `${basePdfName}.pdf`;
+      const pdfName = shouldPaginate ? `${basePdfName}-part${i + 1}.pdf` : `${basePdfName}.pdf`;
 
       await page.pdf({
         path: pdfName,
-        format: 'A4',
+        format: "A4",
         printBackground: true,
         margin: {
-          top: '20mm',
-          right: '20mm',
-          bottom: '20mm',
-          left: '20mm'
+          top: "20mm",
+          right: "20mm",
+          bottom: "20mm",
+          left: "20mm",
         },
-        timeout: 120000
+        timeout: 120000,
       });
 
       await page.close();
       console.log(`PDF generated: ${pdfName}`);
 
       await sleep(500);
-      fs.unlinkSync('./code.html');
+      fs.unlinkSync("./code.html");
     }
   } finally {
     await browser.close();
   }
 
-  if (inputInfo.type === 'github') {
+  if (inputInfo.type === "github") {
     for (let i = 0; i < 3; i++) {
       try {
         fs.rmSync(workDir, { recursive: true, force: true });
         break;
       } catch (err) {
         if (i === 2) {
-          console.warn('Warning: Could not delete temp directory, please delete manually:', workDir);
+          console.warn(
+            "Warning: Could not delete temp directory, please delete manually:",
+            workDir,
+          );
           break;
         }
         await sleep(1000);
@@ -799,18 +842,18 @@ if (args.version) {
   process.exit(0);
 }
 
-const maxFileSize = parseInt(args['max-size'], 10) * 1024; // Convert KB to bytes
-const filesPerPdf = parseInt(args['files-per-pdf'], 10);
-const format = args.format?.toLowerCase() || 'pdf';
+const maxFileSize = parseInt(args["max-size"], 10) * 1024; // Convert KB to bytes
+const filesPerPdf = parseInt(args["files-per-pdf"], 10);
+const format = args.format?.toLowerCase() || "pdf";
 
-if (format === 'latex' || format === 'tex') {
-  generateLaTeXFile(args.input, args.output, maxFileSize).catch(error => {
-    console.error('Error:', error);
+if (format === "latex" || format === "tex") {
+  generateLaTeXFile(args.input, args.output, maxFileSize).catch((error) => {
+    console.error("Error:", error);
     process.exit(1);
   });
-} else if (format === 'pdf') {
-  generatePDF(args.input, args.output, maxFileSize, filesPerPdf).catch(error => {
-    console.error('Error:', error);
+} else if (format === "pdf") {
+  generatePDF(args.input, args.output, maxFileSize, filesPerPdf).catch((error) => {
+    console.error("Error:", error);
     process.exit(1);
   });
 } else {

@@ -111,6 +111,7 @@ node generate-pdf.cjs torvalds/linux --files-per-pdf 50
 ## File Filtering
 
 The tool automatically skips:
+
 - Files and directories in `.gitignore` (respects nested `.gitignore` files)
 - Binary files (images, executables, etc.)
 - Files larger than the size limit (default: 100KB)
@@ -120,6 +121,7 @@ The tool automatically skips:
 ## PDF Pagination
 
 For large repositories, the tool automatically splits output into multiple PDFs:
+
 - Default: 50 files per PDF
 - Customize with `--files-per-pdf` option
 - Output files named: `output-part1.pdf`, `output-part2.pdf`, etc.
